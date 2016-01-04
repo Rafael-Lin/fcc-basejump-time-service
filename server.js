@@ -8,7 +8,7 @@ var app = express();
 //This line accounts for the C9.io dev environment's usage of the process.env.PORT variable to run apps.
 //when not running on c9, it will default to port 3000
 //
-app.set('port', process.env.PORT || 3000);
+app.set('port', 3000);
 
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use(session({
