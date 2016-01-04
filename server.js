@@ -11,11 +11,13 @@ var app = express();
 app.set('port', 3000);
 
 app.use('/public', express.static(process.cwd() + '/public'));
+/*
 app.use(session({
     secret: 'secretClementine',
     resave: false,
     saveUninitialized: true
 }));
+*/
 
 routes(app);
 
