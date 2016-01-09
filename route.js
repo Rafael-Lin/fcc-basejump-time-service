@@ -36,7 +36,11 @@ module.exports = function( useragent, locale, app ) {
                              softwareValue.indexOf('(')+1,
                              softwareValue.indexOf(')')  );
         console.log(tmpStr);
-
+        console.log( req.ips ) ;
+        ip_str  = req.headers['x-forwarded-for'] || 
+         req.connection.remoteAddress || 
+         req.socket.remoteAddress ||
+         req.connection.socket.remoteAddress;
         retJson.ipaddress= ip_str ;
         retJson.language = str[0];
         retJson.software = tmpStr ;
