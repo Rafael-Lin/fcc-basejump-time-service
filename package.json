@@ -16,5 +16,7 @@
     "body-parser" :"*",
     "express-session": "1.11.2",
     "http-status": "0.1.8"
+    "express-useragent": "*",
+    "locale": "*"
   }
 }
