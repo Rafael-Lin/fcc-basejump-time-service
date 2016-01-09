@@ -1,30 +1,19 @@
 'use strict';
 
 
-module.exports = function( useragent, locale, app ) {
+module.exports = function( useragent, locale, app, url, bodyParser ) {
 
     function isNumber(n) {
       return !isNaN(parseFloat(n)) && isFinite(n);
     }
     var path = process.cwd();
-    var monthArr = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    ];
+    var RedirectObj = {};
+    var monthArr = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
     app.route('/').get(function(req, res) {
         res.sendFile(process.cwd() + '/public/index.html');
     });
+
     app.route('/api/whoami').get( function( req,res ){
         var retJson ={};
         var arr = req.headers["accept-language"];
@@ -36,9 +25,8 @@ module.exports = function( useragent, locale, app ) {
                              softwareValue.indexOf('(')+1,
                              softwareValue.indexOf(')')  );
         console.log(tmpStr);
-        console.log( req.ips ) ;
-        ip_str  = req.headers['x-forwarded-for'] || 
-         req.connection.remoteAddress || 
+        ip_str  = req.headers['x-forwarded-for'] ||
+         req.connection.remoteAddress ||
          req.socket.remoteAddress ||
          req.connection.socket.remoteAddress;
         retJson.ipaddress= ip_str ;
@@ -46,7 +34,7 @@ module.exports = function( useragent, locale, app ) {
         retJson.software = tmpStr ;
         res.json( retJson );
     });
-    
+
     app.route('/:input')
     .get( function( req,res ){
             var retJson = {};
@@ -86,7 +74,36 @@ module.exports = function( useragent, locale, app ) {
             }
             res.json( retJson );
 
-        }
-    )
+        });
+
+    function fullUrl(req) {
+      return url.format({
+        protocol: req.protocol,
+        host: req.get('host'),
+        pathname: req.originalUrl
+      });
+    }
+    app.route('/new/http://:originUrl')
+    .get( function( req,res ){
+            var retJson = {};
+            var originUrl = "http://" + req.params.originUrl;
+            /*
+            retJson.original_url = originUrl ;
+            for( var i = 0 ; i < RedirectObj.length ; i ++  ){
+                if(RedirectObj.indexOf( originUrl ) != -1 ){
+                    res.redirect( RedirectObj.originUrl ) ;
+                    return ;
+                }
+            }
+            req.getUrl = function() {
+              return req.protocol + "://" + req.get('host') + req.originalUrl;
+            }
+            */
+           retJson.first = originUrl ;
+           retJson.second = fullUrl(req) ;
+
+            res.json( retJson );
+
+        });
 
 };
