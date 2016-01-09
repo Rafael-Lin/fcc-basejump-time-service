@@ -79,28 +79,36 @@ module.exports = function( useragent, locale, app, url, bodyParser ) {
     function fullUrl(req) {
       return url.format({
         protocol: req.protocol,
-        host: req.get('host'),
-        pathname: req.originalUrl
+        host: req.get('host')
+        // pathname: req.originalUrl
       });
     }
     app.route('/new/http://:originUrl')
     .get( function( req,res ){
             var retJson = {};
             var originUrl = "http://" + req.params.originUrl;
-            /*
-            retJson.original_url = originUrl ;
+            var redirectUrl = "";
             for( var i = 0 ; i < RedirectObj.length ; i ++  ){
                 if(RedirectObj.indexOf( originUrl ) != -1 ){
-                    res.redirect( RedirectObj.originUrl ) ;
-                    return ;
+                    redirectUrl = RedirectObj.originUrl ;
+                    break ;
                 }
             }
-            req.getUrl = function() {
-              return req.protocol + "://" + req.get('host') + req.originalUrl;
+            if( redirectUrl == "" ){
+               retJson.first = originUrl ;
+               retJson.second = fullUrl(req) + "/DD";
+               RedirectObj[ retJson.second ]= retJson.first ;
+               console.log( RedirectObj );
+               app.get("/DD",function( req,res ){
+                  res.redirect( RedirectObj[ retJson.second ] ) ;
+               })
+
+            }else{
+                console.log("found");
+               retJson.first = originUrl ;
+               retJson.second = redirectUrl;
             }
-            */
-           retJson.first = originUrl ;
-           retJson.second = fullUrl(req) ;
+
 
             res.json( retJson );
 
