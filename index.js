@@ -1,88 +1,30 @@
 'use strict';
 
-var InputHandler = require(process.cwd() + '/controllers/inputhandler.server.js');
+var express = require('express');
+var routes = require('./route.js');
+var session = require('express-session');
+var locale = require("locale")
+var useragent = require('express-useragent');
+var url = require('url');
+var bodyParser = require('body-parser');
+var app = express();
 
-module.exports = function(app, db, passport ) {
+//This line accounts for the C9.io dev environment's usage of the process.env.PORT variable to run apps.
+//when not running on c9, it will default to port 3000
+//
+app.set('port', 3000);
+app.use(useragent.express());
+app.use('/public', express.static(process.cwd() + '/public'));
 
-    var inputHandler = new InputHandler(db)
-    var path = process.cwd();
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
-    app.route('/').get(function(req, res) {
-        res.sendFile(process.cwd() + '/public/views/index.html');
-    });
+routes( useragent, locale,app, url, bodyParser );
 
-    // route to test if the user is logged in or not
-    app.get('/loggedin', function(req, res) {
-        console.log(" check logged state") ;
-        console.log( req.user ) ;
-        //req.isAuthenticated() ? req.json( req.user.github ): req.send( '0' ) ;
-        res.send(req.isAuthenticated() ? req.user : '0');
-    });
+var port = process.env.PORT || 3000 ;
 
-    app.route('/api/user/:id')
-        .get(isLoggedIn, function (req, res) {
-            res.json(req.user.github);
-        });
+app.listen(port,  function () {
+    console.log('Node.js listening on port ' + port + '...');
 
-    app.route('/login')
-        .get(function (req, res) {
-            res.sendFile(path + '/public/views/login.html');
-        });
-    app.route('/logout')
-        .get(function (req, res) {
-            req.logout();
-            res.redirect('/');
-        });
+});
 
-    app.route('/auth/github')
-        .get(passport.authenticate('github'));
-
-    app.route('/auth/github/callback')
-        .get(passport.authenticate('github', {
-            successRedirect: '/',
-            failureRedirect: '/login'
-        }));
-
-    app.route('/auth/twitter')
-        .get(passport.authenticate('twitter'));
-
-    app.route('/auth/twitter/callback')
-        .get(passport.authenticate('twitter', {
-            successRedirect: '/',
-            failureRedirect: '/login'
-        }));
-
-    app.route('/auth/facebook')
-        .get(passport.authenticate('facebook'));
-
-    app.route('/auth/facebook/callback')
-        .get(passport.authenticate('facebook', {
-            successRedirect: '/',
-            failureRedirect: '/login'
-        }));
-
-    function isLoggedIn (req, res, next) {
-        if (req.isAuthenticated()) {
-            return next();
-        } else {
-            //res.redirect('/login');
-            res.send(401);
-        }
-    }
-
-    app.route('/api/posts')
-        .get(inputHandler.getPosts)
-        .post(inputHandler.post)
-        .put(inputHandler.editPost)
-        .delete(inputHandler.removePost);
-
-    app.get('/api/edit/:id', inputHandler.getPost);
-
-    //update likes
-    app.route('/api/post/:id')
-        .put(inputHandler.updateLikes);
-
-    app.route('/api/postUnLikes/:id')
-        .put(inputHandler.updateUnLikes);
-
-};
